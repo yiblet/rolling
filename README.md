@@ -1,6 +1,6 @@
 # Rolling
 
-rolling is a simple command line tool that outputs log files in a file-rotating directory.  
+rolling is a simple command line tool that outputs log files in a file-rotating directory.
 The tool was designed to adhere by the [Unix Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy)
 as much as possible. So all it does it write it's standard input into a directory with file rotation.
 
