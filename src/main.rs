@@ -157,21 +157,21 @@ fn parse_bytes(mut bytes_string: &str) -> Result<usize> {
 #[derive(Clap)]
 #[clap(version = "0.1", author = "Shalom Yiblet <shalom.yiblet@gmail.com>")]
 struct Opts {
-    /// Sets a custom config file. Could have been an Option<T> with no default too
+    /// the output directory where the log files are rotated
     dir: String,
 
-    #[clap(short, about = "whether output input to standard out")]
+    #[clap(short, long, about = "whether output input to standard out")]
     silent: bool,
 
     #[clap(
         short = "b",
-        long,
+        long = "max-bytes-per-file",
         default_value = "25M",
-        about = "max number of bytes"
+        about = "max number of bytes in each log file"
     )]
     bytes: String,
 
-    #[clap(short, long, default_value = "10", about = "max number of log files")]
+    #[clap(short, long, default_value = "10", about = "max number of log files in the directory")]
     max_log_files: usize,
 }
 
