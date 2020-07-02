@@ -160,7 +160,7 @@ struct Opts {
     /// Sets a custom config file. Could have been an Option<T> with no default too
     dir: String,
 
-    #[clap(short, about = "wether output input to standard out")]
+    #[clap(short, about = "whether output input to standard out")]
     silent: bool,
 
     #[clap(
