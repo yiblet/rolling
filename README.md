@@ -1,4 +1,4 @@
-# Rolling
+# rolling(1) -- pipe logs into file rotation
 
 rolling is a simple command line tool that outputs log files in a file-rotating directory.
 The tool was designed to adhere by the [Unix Philosophy](https://en.wikipedia.org/wiki/Unix_philosophy)
