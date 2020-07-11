@@ -1,6 +1,6 @@
 use clap::Clap;
 use std::fs::create_dir_all;
-use std::io::{self, Write};
+use std::io::{self, prelude::*};
 
 mod error;
 mod rolling_writer;
@@ -9,6 +9,7 @@ use crate::{
     error::{Result, RollingError},
     rolling_writer::RollingWriter,
 };
+use io::BufReader;
 
 fn main() -> Result<()> {
     let mut input = String::new();
@@ -21,11 +22,13 @@ fn main() -> Result<()> {
         opts.max_log_files,
     )?;
 
-    while io::stdin().read_line(&mut input)? != 0 {
+    let mut reader = BufReader::new(io::stdin());
+    while reader.read_line(&mut input)? != 0 {
         writer.write(input.as_bytes())?;
         if !opts.silent {
             print!("{}", input.as_str())
         }
+        input.clear();
     }
     Ok(())
 }

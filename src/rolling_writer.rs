@@ -2,7 +2,7 @@ use crate::error::Result;
 use std::{
     collections::VecDeque,
     fs::File,
-    io::{self, Write},
+    io::{self, BufWriter, Write},
 };
 
 pub struct RollingWriter {
@@ -12,16 +12,23 @@ pub struct RollingWriter {
     max_files: usize,
     max_bytes_written: usize,
     cur_bytes_written: usize,
-    cur_file: File,
+    cur_file: BufWriter<File>,
 }
 
 fn get_id(file: &str) -> Option<usize> {
-    let prefix = &file[..file.len() - ".log".len()];
+    let mut prefix = &file[..file.len() - ".log".len()];
+    prefix = &prefix[prefix.rfind(".")? + 1..];
     prefix.parse().ok()
 }
 
 fn get_new_file(dir: &str, id: usize) -> (String, String) {
-    (format!("{}/{:03}.log", dir, id), format!("{:03}.log", id))
+    let time = chrono::prelude::Utc::now()
+        .format("%FT%H:%M:%S")
+        .to_string();
+    (
+        format!("{}/{}.{:03}.log", dir, time, id),
+        format!("{}.{:03}.log", time, id),
+    )
 }
 
 impl RollingWriter {
@@ -62,7 +69,7 @@ impl RollingWriter {
             max_files,
             max_bytes_written,
             cur_bytes_written: 0,
-            cur_file: file,
+            cur_file: BufWriter::new(file),
         };
         output.add_file(new_file_name.as_str(), num_rolls - 1)?;
 
@@ -87,18 +94,18 @@ impl RollingWriter {
         let (new_file, new_file_name) = get_new_file(self.roll_dir.as_str(), self.num_rolls);
         self.add_file(new_file_name.as_str(), self.num_rolls)?;
         self.num_rolls += 1;
-        self.cur_file = File::create(new_file)?;
+        self.cur_file = BufWriter::new(File::create(new_file)?);
         Ok(())
     }
 }
 
 impl Write for RollingWriter {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        if self.cur_bytes_written + buf.len() > self.max_bytes_written {
+        let buf_len = buf.len();
+        if self.cur_bytes_written + buf_len > self.max_bytes_written {
             self.roll()?;
         }
-
-        self.cur_bytes_written += buf.len();
+        self.cur_bytes_written += buf_len;
         self.cur_file.write(buf)
     }
 
@@ -107,15 +114,13 @@ impl Write for RollingWriter {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn get_id_test() {
-        assert_eq!(get_id("01.log"), Some(1));
-        assert_eq!(get_id("2311.log"), Some(2311));
+        assert_eq!(get_id("2001-01-04T14:15:50.01.log"), Some(1));
+        assert_eq!(get_id("2001-01-04T14:15:50.2311.log"), Some(2311));
     }
 }
